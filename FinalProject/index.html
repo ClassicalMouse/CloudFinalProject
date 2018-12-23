@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- <script type="text/javascript" src="amazon-cognito-auth.min.js"></script>
+		<script type="text/javascript" src="amazon-cognito-identity.min.js"></script> -->
+
+		<!-- optional: only if you use other AWS services -->
+		<!-- <script src="/path/to/aws-sdk-2.6.10.js"></script> -->
+		<!-- <script type="text/javascript" src="aws-cognito-sdk.min.js"></script> -->
+		<!-- <script type="text/javascript" src="amazon-cognito-identity.js"></script> -->
+
+		<!-- <script src="https://sdk.amazonaws.com/js/aws-sdk-2.358.0.min.js"></script> -->
+		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+		<!-- <script type="text/javascript" src="aws-sdk.min.js"></script> -->
+		<script type="text/javascript" src="aws-sdk-2.358.0.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+		<script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+
+		<script type="text/javascript">
+			function myFunction(url,alias,addr,phone,rating) {
+			//function myFunction() {
+				// var url = "url";
+				// var alias = "alias";
+				// var addr = "addr";
+				// var phone = "phone";
+				// var rating = "rating";
+			  var x = document.createElement("img");
+
+			  x.setAttribute('src', url);
+			  var imgdiv = document.getElementById('gympanel');
+			  x.setAttribute("width","250px");
+			  x.setAttribute("height","200px");
+			  
+			  
+			  
+			  var title1 = document.createElement("p");
+			  title1.innerHTML = alias;
+			  title1.class = "gymimage";
+			  var addr1 = document.createElement("p");
+			  addr1.innerHTML = addr;
+			  addr1.class = "gymtext";
+			  var phone1 = document.createElement("p");
+			  phone1.innerHTML = phone;
+			  phone1.class = "gymtext";
+			  var rating1 = document.createElement("p");
+			  rating1.innerHTML = rating;
+			  rating1.class = "gymtext";
+
+			  var newdiv = document.createElement("div");
+			  newdiv.id = "gymdiv";
+			  imgdiv.appendChild(newdiv);
+			  newdiv.appendChild(x);
+			  newdiv.appendChild(title1);
+			  newdiv.appendChild(addr1);
+			  newdiv.appendChild(phone1);
+			  newdiv.appendChild(rating1);
+			  
+
+			  
+			}
+			//myFunction();
+
+
+			function sleep (time) {
+			  return new Promise((resolve) => setTimeout(resolve, time));
+			}
+
+			function getUrlVars(temp) {
+				/*
+			    var vars = {};
+			    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+			        vars[key] = value;
+			    });
+			    return vars;*/
+			    var parts = window.location.href.replace(temp,"");
+			    //var parts = window.location.href.replace("file:///Users/mingdadu/Desktop/CloudComputing/Assignment2/cloudassignment1/Webpage/index.html#id_token=","");
+			    parts = parts.split("&");
+			    
+			    return parts[0];
+			}
+
+			//var jwt = getUrlVars()["#id_token"];
+			var suburl = "https://s3.us-east-2.amazonaws.com/homework1chatbotoct/index.html#id_token=";
+			var jwt = getUrlVars(suburl);
+			console.log("jwt="+jwt);
+			suburl = "https://s3.us-east-2.amazonaws.com/homework1chatbotoct/index.html?code=";
+			//var accesstoken =  getUrlVars(suburl);
+			//console.log("accesstoken="+accesstoken);
+
+			//var userToken = jwt;
+			var accessKeyId, secretAccessKey, sessionToken;
+			//function getAwsCredentials() {
+			const authenticator = 'cognito-idp.us-east-2.amazonaws.com/us-east-2_FDQxw0Fej';
+			//AWS.config.region = 'us-east-2';
+			AWS.config.update({ region: 'us-east-2' });
+
+			AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+		    	IdentityPoolId: 'us-east-2:a4236709-6b74-4268-af57-d2cdd1d404f9',
+		    	Logins: {
+		    		[authenticator]: jwt
+				}
+			});
+			/*AWS.config.credentials.get(function(err){
+			    if (err) {
+			        alert(err);
+			    }
+			});*/
+
+			//console.log(AWS.config.credentials.getPromise());
+			
+			AWS.config.credentials.get(function(){
+
+			    // Credentials will be available when this function is called.
+			    accessKeyId = AWS.config.credentials.accessKeyId;
+			    secretAccessKey = AWS.config.credentials.secretAccessKey;
+			    sessionToken = AWS.config.credentials.sessionToken;
+
+			    console.log("accessKeyId = ", accessKeyId," secretAccessKey = ", secretAccessKey," sessionToken = ",sessionToken);
+			    
+			});
+				
+			var latitude;
+			var longitude;
+
+			function apipost(){
+				//console.log(cognitoUser);
+				var pa = document.createElement('p');
+				pa.setAttribute("id", "pa");
+				var str2 = document.getElementById("input1").value;
+				pa.innerHTML = str2;//"You: " + str2;
+				document.getElementById("supercool2").appendChild(pa);
+				
+				
+					var apigClient = apigClientFactory.newClient({
+						apiKey: '6cfsv4h8W54j7puRUk2HU3DTuIbGtxZ1FOY0c943',
+						accessKey: accessKeyId,
+						secretKey: secretAccessKey,
+						sessionToken: sessionToken,
+						region: 'us-east-2'
+
+					});
+					console.log("accessKeyId = ", accessKeyId," secretAccessKey = ", secretAccessKey," sessionToken = ",sessionToken);
+					var params = {
+						//"Authorization":jwt
+					};
+					var inputstring = document.getElementById("input1").value;
+					var body = {
+						//Authorization: jwt,
+						flag: "1",
+						userid : secretAccessKey,
+						sending : inputstring
+					  // This is where you define the body of the request,
+					};
+
+					var additionalParams = {
+						queryParams: {
+						    //Authorization: jwt
+						}
+					};
+					
+					
+					apigClient.chatbotPost(params, body, additionalParams)
+					    .then(function(result){
+					    	console.log(result);
+					    	console.log(result["data"]["greeting"]);
+					    	var pa2 = document.createElement('p');
+							var str1 = result["data"]["greeting"];
+							pa2.innerHTML = str1;//"Bot: " + str1;
+							pa2.setAttribute("id", "pa2");
+							document.getElementById("supercool2").appendChild(pa2);
+					        var messageBody = document.querySelector('#scrollthing');
+							messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+					        
+					      // Add success callback code here.
+					    }).catch( function(result){
+					      // Add error callback code here.
+				    });
+				//})
+				//});
+				document.getElementById("input1").value = "";
+				var messageBody = document.querySelector('#scrollthing');
+				messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;	
+			}
+			
+
+			function apipostgym(){
+				// var latitude = latitude;
+				// var longitude = longitude;
+				// var pa = document.createElement('p');
+				// pa.setAttribute("id", "pa");
+				// var str2 = document.getElementById("input1").value;
+				// pa.innerHTML = str2;
+				// document.getElementById("supercool2").appendChild(pa);
+				
+				var apigClient = apigClientFactory.newClient({
+					apiKey: '6cfsv4h8W54j7puRUk2HU3DTuIbGtxZ1FOY0c943',
+					accessKey: accessKeyId,
+					secretKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: 'us-east-2'
+
+				});
+				// console.log("accessKeyId = ", accessKeyId," secretAccessKey = ", secretAccessKey," sessionToken = ",sessionToken);
+				var params = {
+					
+				};
+				//var inputstring = document.getElementById("input1").value;
+				var body = {
+					//Authorization: jwt,
+					// userid : secretAccessKey,
+					
+					flag: "2",
+					latitude: latitude,
+					longitude: longitude
+				};
+
+				var additionalParams = {
+					queryParams: {
+
+					}
+				};
+				
+				
+				apigClient.chatbotPost(params, body, additionalParams)
+				    .then(function(result){
+				    	console.log(result);
+				    	console.log(result["data"]);
+				    	console.log(result["data"]["refined"]["businesses"][0]["image_url"]);
+
+				  //   	var pa2 = document.createElement('p');
+						// var str1 = result["data"]["greeting"];
+						// pa2.innerHTML = str1;
+						// pa2.setAttribute("id", "pa2");
+						// document.getElementById("supercool").appendChild(pa2);
+				        for(var i = 0; i<6; i++){
+				        	console.log("here");
+				        	var url = result["data"]["refined"]["businesses"][i]["image_url"];
+				        	var alias = String(result["data"]["refined"]["businesses"][i]["alias"]);
+				        	alias = alias.replace('-',' ');
+				        	alias = "Title: "+alias;
+				        	var addr = "Address: ";
+				        	for(var j = 0; j<result["data"]["refined"]["businesses"][i]["location"]["display_address"].length;j++){
+				        		addr += result["data"]["refined"]["businesses"][i]["location"]["display_address"][j];
+
+				        	}
+				        	var phone = "Phone: "+result["data"]["refined"]["businesses"][i]["display_phone"];
+				        	var rating = "Rating: "+ result["data"]["refined"]["businesses"][i]["rating"];
+				        	myFunction(url,alias,addr,phone,rating);
+				        }
+				        
+				    }).catch( function(result){
+			    });
+				
+				document.getElementById("input1").value = "";
+
+				
+			}
+
+			function setvalue(position){
+				if(latitude==null||longitude==null){
+					latitude = position.coords.latitude;
+					longitude = position.coords.longitude;
+				}
+				apipostgym(latitude,longitude);
+			}
+			if (navigator.geolocation) {
+				//var position;
+				navigator.geolocation.getCurrentPosition(setvalue);
+				//console.log(position);
+
+			} else { 
+				console.log("Geolocation is not supported by this browser.");
+			}
+
+
+
+			function apipostanalysis(){
+				//console.log(cognitoUser);
+				
+				
+				var apigClient = apigClientFactory.newClient({
+					apiKey: '6cfsv4h8W54j7puRUk2HU3DTuIbGtxZ1FOY0c943',
+					accessKey: accessKeyId,
+					secretKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: 'us-east-2'
+
+				});
+				console.log("accessKeyId = ", accessKeyId," secretAccessKey = ", secretAccessKey," sessionToken = ",sessionToken);
+				var params = {
+					//"Authorization":jwt
+				};
+				var name = document.getElementById("nameinput").value;
+				var phonenumber = document.getElementById("phonenumber").value;
+				var body = {
+					//Authorization: jwt,
+					flag: "3",
+					//userid : secretAccessKey,
+					sendname : name,
+					sendpn : phonenumber
+				  // This is where you define the body of the request,
+				};
+
+				var additionalParams = {
+					queryParams: {
+					    //Authorization: jwt
+					}
+				};
+				
+				
+				apigClient.chatbotPost(params, body, additionalParams)
+				    .then(function(result){
+				    	console.log(result);
+				    	console.log(result["data"]["greeting"]);
+				    	var mdb = document.getElementById('messageddb');
+						var str1 = result["data"]["greeting"];
+						mdb.innerHTML = str1;//"Bot: " + str1;
+
+						console.log("here0");
+						var len = result["data"]["data"]["Items"].length;
+						console.log(len);
+
+						var html1 = "<script>$(function () { var myChart = Highcharts.chart('container', {chart: {type: 'line'},title: {text: '";
+						html1+="BMI Analysis";
+						html1+="'},xAxis: {categories: [";
+
+						for(var i =0; i<len; i++){
+							var array =result["data"]["data"]["Items"][i].timestamp.split(" ");
+							html1+="'"+array[1]+" "+array[2]+"'";
+							if(i!=len-1){
+								html1+=",";
+							}
+						}
+						// console.log("here1");
+						html1+="]},yAxis: {title: {text: 'BMI'}},plotOptions: {line: {dataLabels: {enabled: true},enableMouseTracking: false}},series: [{name: '"+name+" BMI',data: [";
+						for(var i =0; i<len; i++){
+							
+							html1+=String(result["data"]["data"]["Items"][i].bmi);
+							if(i!=len-1){
+								html1+=",";
+							}
+						}
+						html1+="]}]});});<\/script>";
+
+						console.log(html1);
+						var cont = document.getElementById('cont');
+						cont.innerHTML = html1;
+						var oldScript = cont.getElementsByTagName('script')[0];
+						cont.removeChild(oldScript);
+						var scriptText = oldScript.innerHTML;
+						eval(scriptText);
+
+						var html1 = "<script>$(function () { var myChart = Highcharts.chart('container2', {chart: {type: 'line'},title: {text: '";
+						html1+="Calories Burned Analysis";
+						html1+="'},xAxis: {categories: [";
+
+						for(var i =0; i<len; i++){
+							var array =result["data"]["data"]["Items"][i].timestamp.split(" ");
+							html1+="'"+array[1]+" "+array[2]+"'";
+							if(i!=len-1){
+								html1+=",";
+							}
+						}
+						// console.log("here1");
+						html1+="]},yAxis: {title: {text: 'Calories burned'}},plotOptions: {line: {dataLabels: {enabled: true},enableMouseTracking: false}},series: [{name: '"+name+" Calories Burned',data: [";
+						for(var i =0; i<len; i++){
+							
+							html1+=String(result["data"]["data"]["Items"][i].burn);
+							if(i!=len-1){
+								html1+=",";
+							}
+						}
+						html1+="]}]});});<\/script>";
+
+						console.log(html1);
+						var cont = document.getElementById('cont');
+						cont.innerHTML = html1;
+						var oldScript = cont.getElementsByTagName('script')[0];
+						cont.removeChild(oldScript);
+						var scriptText = oldScript.innerHTML;
+						eval(scriptText);
+
+				  //       var messageBody = document.querySelector('#scrollthing');
+						// messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+				        
+				      // Add success callback code here.
+				    }).catch( function(result){
+				      // Add error callback code here.
+			    });
+				//})
+				//});
+				document.getElementById("input1").value = "";
+				var messageBody = document.querySelector('#scrollthing');
+				messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;	
+			}
+		</script>
+		<style type="text/css">
+			#pa2{
+				margin-left: 15px;
+				height: 15px;
+				font-size: 15px;
+				padding-left: 12px;
+				font-weight : bold;
+				border-left-style: solid;
+				border-left-width: 5px;
+				border-left-color: blue;
+				/*background-color: red;*/
+
+			}
+			#pa{
+				margin-right: 15px;
+				height: 15px;
+				font-size: 15px;
+				text-align: right;
+				font-weight : bold;
+				padding-right: 12px;
+				border-right-style: solid;
+				border-right-width: 5px;
+				border-right-color: red;
+				/*background-color: red;*/
+
+			}
+			#panel{
+				/*margin-top: 50px;*/
+				margin-bottom: 50px;
+				margin-left: 350px;
+				margin-right: 300px;
+				
+			}
+			#ins{
+				/*margin-left: 300px;*/
+				/*margin-right: auto;*/
+				margin-top: 50px;
+				font-size: 30px;
+				text-align: center;
+			}
+			#wins{
+				margin-left: 120px;
+				font-size: 25px;
+			}
+			#input1{
+				height: 18px;
+				font-size: 15px;
+				margin-top: 10px;
+				margin-right: 5px;
+				margin-left: 18px;
+			}
+			#inputbut{
+				height: 1.6em;
+				font-size: 15px;
+			}
+			#chatpanel{
+				/*border-style: solid;
+  				border-width: 1px;*/
+  				background-color: #cbf4ec;
+  				padding-top: 10px;
+  				padding-bottom: 10px;
+  				padding-left: 10px;
+				padding-right: 10px;
+			}
+			#getanalysis{
+				margin-top: 0px;
+				background-color: #d9fcf5;
+  				padding-top: 10px;
+  				padding-bottom: 10px;
+  				padding-left: 10px;
+				padding-right: 10px;
+				margin-left: 350px;
+				margin-right: 300px;
+			}
+			#gympanel{
+				display: inline-block;
+				float: left;
+				height: 760px;
+				/*width: 100%;*/
+				margin-top: 12px;
+				margin-left: 150px;
+				margin-right: 150px;
+				margin-bottom: 20px;
+				/*text-align: center;*/
+			}
+			#big{
+				/*display: inline;*/
+			}
+			#container{
+
+				margin-left: 350px;
+				margin-right: 350px;
+				margin-bottom: 50px;
+				/*text-align: center;*/
+			}
+			#container2{
+				margin-top: 50px;
+				margin-left: 350px;
+				margin-right: 350px;
+				margin-bottom: 100px;
+				/*text-align: center;*/
+			}
+			.scrollable {
+				height: 400px;
+				overflow-y : scroll;
+				 
+			}
+			.gymimage{
+
+			}
+			.gymtext{
+				margin-left: 8px;
+				width: 240px;
+			}
+			#gymdiv{
+				float:left;
+				width: 370px;
+				/*display: inline-block;*/
+			}
+		</style>
+	</head>
+	<body>
+		
+		<p id = "ins"><u><b>Welcome to Be-Fit!</b></u></p>
+		<p id = "wins">Recommended Gym Near You! Be Fit Today!</p>
+		<div id = "big">
+		<div id = "gympanel">
+			
+		</div>
+		<div id="panel">
+			
+			<button onclick="apipostgym()" id="inputbut">
+				find gym
+			</button>	
+			
+			<div id = "chatpanel">
+				
+				<div class="scrollable" id = "scrollthing">
+					<div id="supercool"></div>
+					<div id = "supercool2">
+						<p id = "pa2">Hi!</p>
+					</div>
+					<input type="text" id="input1" size="35" >
+					<button onclick="apipost()" id="inputbut">
+						send
+					</button>
+				</div>
+			</div>
+			
+			
+			
+		</div>
+		<div id = "getanalysis">
+			<span>Name:</span>
+			<input type="text" id="nameinput" size="35" >
+			<br>
+			<span>Phone number:</span>
+			
+			<input type="text" id="phonenumber" size="35" >
+			<br>
+			<button onclick="apipostanalysis()" id="inputbut">
+				analysis
+			</button><span id = "messageddb"></span>
+		</div>
+		</div>
+		<div id="container" style="width:50%; height:300px;"></div>
+		<div id="container2" style="width:50%; height:300px;"></div>
+		<div id = "cont">
+			<script></script>
+			<!-- <script>
+				$(function () { 
+				    var myChart = Highcharts.chart('container', {
+				        
+					    chart: {
+					        type: 'line'
+					    },
+					    title: {
+					        text: 'Monthly Average Temperature'
+					    },
+					    subtitle: {
+					        text: 'Source: WorldClimate.com'
+					    },
+					    xAxis: {
+					        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+					    },
+					    yAxis: {
+					        title: {
+					            text: 'BMI'
+					        }
+					    },
+					    plotOptions: {
+					        line: {
+					            dataLabels: {
+					                enabled: true
+					            },
+					            enableMouseTracking: false
+					        }
+					    },
+					    series: [{
+					        name: 'Chris BMI',
+					        data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+					    }/*, {
+					        name: 'London',
+					        data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+					    }*/]
+					});
+				});
+			</script> -->
+			
+			
+
+			
+			
+			
+			
+			
+		</div>
+	</body>
+	
+</html>

@@ -1,0 +1,1 @@
+https://chatbotm.auth.us-east-2.amazoncognito.com/login?response_type=token&client_id=18d4aqn95j9di7qjr7e8a5enoo&redirect_uri=https://s3.us-east-2.amazonaws.com/homework1chatbotoct/index.html
